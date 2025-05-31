@@ -1,0 +1,15 @@
+{% extends 'events_photos/base.html' %}
+
+{% block title %}Upload Photo | Photo App{% endblock %}
+
+{% block content %}
+    <h2>Upload Photo for {{ active_event.name }}</h2>
+
+    <form method="post" enctype="multipart/form-data"> {# enctype is CRITICAL for file uploads! #}
+        {% csrf_token %} {# Django's security token #}
+        {{ form.as_p }} {# Renders form fields as paragraphs #}
+        <button type="submit">Upload Photo</button>
+    </form>
+
+    <p><a href="{% url 'photo_gallery' %}">Back to Gallery</a></p>
+{% endblock %}

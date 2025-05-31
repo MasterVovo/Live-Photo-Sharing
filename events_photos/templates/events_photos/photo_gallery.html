@@ -1,0 +1,112 @@
+{% extends 'events_photos/base.html' %}
+
+{% block title %}Photo Gallery | Photo App{% endblock %}
+
+{% block content %}
+    {% if active_event %}
+        <h2>Photos for Event: {{ active_event.name }}</h2>
+
+        <div class="filter-section" style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 8px; background-color: #f9f9f9;">
+            <h3>Filter Photos</h3>
+            <form method="GET" action="{% url 'photo_gallery' %}" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 15px;">
+                <div style="flex: 1 1 auto; min-width: 200px;">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ start_date|default:'' }}" style="width: 100%; padding: 8px;">
+                </div>
+                <div style="flex: 1 1 auto; min-width: 200px;">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ end_date|default:'' }}" style="width: 100%; padding: 8px;">
+                </div>
+                <div style="flex-basis: 100%;">
+                    <button type="submit" style="padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Apply Filter</button>
+                    <a href="{% url 'photo_gallery' %}" style="margin-left: 10px; padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; text-decoration: none;">Reset Filter</a>
+                </div>
+                <div style="flex-basis: 100%;">
+                    <h4>Quick Filters:</h4>
+                    <button type="submit" name="preset" value="today" style="padding: 8px 12px; margin-right: 5px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Today</button>
+                    <button type="submit" name="preset" value="last_7_days" style="padding: 8px 12px; margin-right: 5px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Last 7 Days</button>
+                    <button type="submit" name="preset" value="this_month" style="padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">This Month</button>
+                </div>
+            </form>
+        </div>
+
+        {% if photos.object_list %}
+            <div class="gallery">
+                {% for photo in photos.object_list %}
+                    <div class="gallery-item">
+                        <a href="{{ photo.image.url }}" data-src="{{ photo.image.url }}" title="{% if photo.description %}{{ photo.description }}{% else %}Photo by {{ photo.uploaded_by.email }}{% endif %}" class="gal-item">
+                            <img src="{{ photo.image.url }}" alt="{{ photo.description|default:'Event Photo' }}">
+                        </a>
+                        {% if photo.description %}
+                            <p>{{ photo.description }}</p>
+                        {% endif %}
+                        <p>Uploaded by: {{ photo.uploaded_by.email }}</p>
+                        <p>Uploaded at: {{ photo.uploaded_at|date:"M d, Y H:i" }}</p>
+
+                        {% if request.user.is_authenticated and request.user == photo.uploaded_by %}
+                            <p>
+                                <a href="{% url 'edit_photo' photo.id %}">Edit</a> |
+                                <a href="{% url 'delete_photo' photo.id %}">Delete</a>
+                            </p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="pagination" style="text-align: center; margin-top: 20px;">
+                <span class="step-links">
+                    {% with request.GET.urlencode as current_query_params %}
+                        {% if photos.has_previous %}
+                            <a href="?{{ current_query_params|cut:'page='|cut:'&page=' }}&page=1">&laquo; first</a>
+                            <a href="?{{ current_query_params|cut:'page='|cut:'&page=' }}&page={{ photos.previous_page_number }}">previous</a>
+                        {% endif %}
+                        
+                        <span class="current">
+                            Page {{ photos.number }} of {{ photos.paginator.num_pages }}.
+                        </span>
+
+                        {% if photos.has_next %}
+                            <a href="?{{ current_query_params|cut:'page='|cut:'&page=' }}&page={{ photos.next_page_number }}">next</a>
+                            <a href="?{{ current_query_params|cut:'page='|cut:'&page=' }}&page={{ photos.paginator.num_pages }}">last &raquo;</a>
+                        {% endif %}
+                    {% endwith %}
+                </span>
+
+            </div>
+        {% else %}
+            <p>No photos have been uploaded for "{{ active_event.name }}" yet. Be the first to <a href="{% url 'upload_photo' %}">upload one</a>!</p>
+        {% endif %}
+    {% else %}
+        <p>There is no active event set. Please contact an administrator to activate an event.</p>
+    {% endif %}
+
+    <p><a href="{% url 'upload_photo' %}">Upload a new photo</a></p>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var gallery = new SimpleLightbox('.gallery a.gal-item', {
+                sourceAttr: 'data-src', 
+                captionsData: 'title',  
+                captionDelay: 250,      
+                nav: true,              
+                close: true,            
+                loop: true              
+            });
+
+            gallery.on('error.simplelightbox', function(e) {
+                console.error("SimpleLightbox error:", e);
+                console.error("Failed image:", e.element ? e.element.href : "Element was undefined/null");
+            });
+
+            document.getElementById('start_date').addEventListener('change', function() {
+                document.querySelectorAll('.filter-section button[name="preset"]').forEach(btn => btn.removeAttribute('name'));
+            });
+
+            document.getElementById('end_date').addEventListener('change', function() {
+                document.querySelectorAll('.filter-section button[name="preset"]').forEach(btn => btn.removeAttribute('name'));
+            });
+        });
+    </script>
+{% endblock %}

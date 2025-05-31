@@ -1,0 +1,12 @@
+{% extends 'events_photos/base.html' %}
+
+{% block title %}Welcome | Photo App{% endblock %}
+
+{% block content %}
+    <h2>Welcome to the School Photo App!</h2>
+    <p>You have successfully logged in with your school account.</p>
+    {% if user.is_authenticated %}
+        <p>Logged in as: {{ user.email }}</p>
+    {% endif %}
+    <p>Use the navigation above to view or upload photos.</p>
+{% endblock %}

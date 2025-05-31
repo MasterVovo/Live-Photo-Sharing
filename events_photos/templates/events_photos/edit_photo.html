@@ -1,0 +1,16 @@
+{% extends 'events_photos/base.html' %}
+
+{% block title %}Edit Photo | Photo App{% endblock %}
+
+{% block content %}
+    <h2>Edit Photo</h2>
+    <img src="{{ photo.image.url }}" alt="{{ photo.description|default:'Photo to edit' }}" style="max-width: 300px; height: auto; display: block; margin-bottom: 20px;">
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Update Photo</button>
+    </form>
+
+    <p><a href="{% url 'photo_gallery' %}">Cancel and go back to Gallery</a></p>
+{% endblock %}
