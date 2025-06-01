@@ -134,11 +134,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    # 'allauth.account.auth.AccountAuthBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-LOGIN_REDIRECT_URL = '/welcome/'
+LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
 ACCOUNT_AUTHENTICATION_METHOD = "email"
@@ -153,11 +152,13 @@ ACCOUNT_FORMS = {
 }
 
 ACCOUNT_PREVENT_ENUMERATION = False
-
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 ACCOUNT_LOGIN_METHODS = ['email']
 ACCOUNT_SIGNUP_FIELDS = ['email']
 ACCOUNT_SIGNUP_NO_RECAPTCHA = True
 ACCOUNT_SESSION_REMEMBER = True
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {

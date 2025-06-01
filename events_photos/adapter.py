@@ -4,10 +4,10 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
+from django.http import HttpResponseRedirect
+from allauth.exceptions import ImmediateHttpResponse
 
 class SchoolAccountAdapter(DefaultAccountAdapter):
-    # This adapter will be used for general account behavior (e.g., if you had local signups)
-    # but the social adapter is more relevant for social logins.
     pass
 
 class SchoolSocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -26,9 +26,12 @@ class SchoolSocialAccountAdapter(DefaultSocialAccountAdapter):
             if domain != self.SCHOOL_EMAIL_DOMAIN:
                 # This will raise a ValidationError and prevent the login/signup
                 # You can customize the error message to be more user-friendly
-                raise ValidationError(
-                    f"Access denied: You must use an email address from {self.SCHOOL_EMAIL_DOMAIN} to log in."
+                request.session['kld_email_error'] = (
+                    f"Authentication failed: Please use your {self.SCHOOL_EMAIL_DOMAIN} Google Account to sign in."
                 )
+                raise ImmediateHttpResponse(redirect(reverse('home')))
+                
+        return None
 
     def is_auto_signup_allowed(self, request, sociallogin):
         """

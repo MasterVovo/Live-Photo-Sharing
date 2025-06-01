@@ -43,16 +43,6 @@
 <body>
     <header>
         <h1>School Photo App</h1>
-        <nav>
-            <a href="{% url 'photo_gallery' %}">View Photos</a>
-            <a href="{% url 'upload_photo' %}">Upload Photo</a>
-            {% if user.is_authenticated %}
-                <span>Welcome, {{ user.email }}!</span>
-                <a href="{% url 'account_logout' %}">Logout</a>
-            {% else %}
-                <a href="{% url 'account_login' %}">Login</a>
-            {% endif %}
-        </nav>
     </header>
 
     <hr>

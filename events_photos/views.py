@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime, timedelta, date
+from django.utils import timezone
 
 from .models import Event, Photo, CustomUser
 from .forms import PhotoUploadForm, PhotoEditForm
@@ -17,7 +18,7 @@ def home_view(request):
     try:
         current_active_event = Event.objects.get(is_active=True)
     except Event.DoesNotExist:
-        seven_days_ago = date.today() - timedelta(days=7)
+        seven_days_ago = timezone.now() - timedelta(days=7)
         recent_event = Event.objects.filter(
             is_active=False,
             end_time__gte=seven_days_ago
@@ -57,7 +58,6 @@ def home_view(request):
             try:
                 joined_event = Event.objects.get(event_code=joined_event_code)
                 if joined_event.is_active:
-                    user_joined_event = True
                     return redirect('photo_gallery')
             except Event.DoesNotExist:
                 user.joined_event_code = None

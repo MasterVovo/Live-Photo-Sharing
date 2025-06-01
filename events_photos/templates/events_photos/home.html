@@ -1,6 +1,6 @@
 {% extends 'events_photos/base.html' %}
 {% load static %}
-{% load socialaccount %} {# For Google login #}
+{% load socialaccount %}
 
 {% block title %}Welcome to KLD Event Photo App{% endblock %}
 
@@ -50,7 +50,7 @@
 
         <div style="margin-top: 40px;">
             {% if is_authenticated_user %}
-                <h2 style="color: #28a745;">Welcome, {{ user.first_name|default:user.username }}!</h2>
+                <h2 style="color: #28a745;">Welcome, {{ user.get_full_name }}!</h2>
                 <p style="font-size: 1.1em; color: #555;">Enter an event code to join an event and start sharing photos.</p>
 
                 <form method="post" style="margin-top: 20px;">
