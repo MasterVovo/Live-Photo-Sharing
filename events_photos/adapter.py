@@ -1,6 +1,9 @@
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.core.exceptions import ValidationError
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.contrib import messages
 
 class SchoolAccountAdapter(DefaultAccountAdapter):
     # This adapter will be used for general account behavior (e.g., if you had local signups)
@@ -41,5 +44,13 @@ class SchoolSocialAccountAdapter(DefaultSocialAccountAdapter):
         """
         # For our case, we'll just use the LOGIN_REDIRECT_URL from settings.
         # This method is more useful if you have complex redirect logic.
-        from django.conf import settings
-        return settings.LOGIN_REDIRECT_URL
+        return reverse('home')
+
+    def authentication_error(self, request, provider_id, error=None, **kwargs):
+        
+        if error and 'access_denied' in str(error).lower() and self.SCHOOL_EMAIL_DOMAIN in str(error).lower():
+            request.session['kld_email_error'] = f"Authentication failed: Please use your {self.SCHOOL_EMAIL_DOMAIN} Google Account to sign in."
+        elif error:
+            request.session['kld_email_error'] = "An authentication error occurred. Please try again."
+        
+        return redirect(reverse('home'))

@@ -4,24 +4,93 @@ from django.contrib import messages
 from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime, timedelta, date
-from .models import Event, Photo
+
+from .models import Event, Photo, CustomUser
 from .forms import PhotoUploadForm, PhotoEditForm
 
 # Create your views here.
-@login_required
-def welcome_view(request):
-    return render(request, 'events_photos/welcome.html')
+def home_view(request):
+    current_active_event = None
+    recent_event = None
+    error_message = None
 
+    try:
+        current_active_event = Event.objects.get(is_active=True)
+    except Event.DoesNotExist:
+        seven_days_ago = date.today() - timedelta(days=7)
+        recent_event = Event.objects.filter(
+            is_active=False,
+            end_time__gte=seven_days_ago
+            ).order_by('-end_time')
+        
+        if recent_event.exists():
+            recent_event = recent_event.first()
+        else:
+            recent_event = Event.objects.order_by('-end_time').first()
+
+    if 'kld_email_error' in request.session:
+        error_message = request.session.pop('kld_email_error')
+
+    if request.user.is_authenticated:
+        user = request.user
+        joined_event_code = user.joined_event_code
+        event_code_form_error = None
+
+        if request.method == 'POST':
+            entered_code = request.POST.get('event_code_input', '').strip()
+            if entered_code:
+                try:
+                    event_to_join = Event.objects.get(event_code=entered_code)
+                    if event_to_join.is_active:
+                        user.joined_event_code = entered_code
+                        user.save()
+                        messages.success(request, f"You have joined {event_to_join.name}!")
+                        return redirect('photo_gallery')
+                    else:
+                        event_code_form_error = "This event is not active."
+                except Event.DoesNotExist:
+                    event_code_form_error = "Invalid event code. Please try again."
+            else:
+                event_code_form_error = "Please enter an event code."
+        
+        if joined_event_code:
+            try:
+                joined_event = Event.objects.get(event_code=joined_event_code)
+                if joined_event.is_active:
+                    user_joined_event = True
+                    return redirect('photo_gallery')
+            except Event.DoesNotExist:
+                user.joined_event_code = None
+                user.save()
+                messages.warning(request, "The event you were previously joined to no longer exists or is invalid. Please contact the administrator.")
+        
+        context = {
+            'is_authenticated_user': True,
+            'current_active_event': current_active_event,
+            'recent_event': recent_event,
+            'event_code_form_error': event_code_form_error,
+            'global_error_message': error_message,
+        }
+        return render(request, 'events_photos/home.html', context)
+    else:
+        context = {
+            'is_authenticated_user': False,
+            'current_active_event': current_active_event,
+            'recent_event': recent_event,
+            'global_error_message': error_message,
+        }
+        return render(request, 'events_photos/home.html', context)
+        
 @login_required
 def upload_photo_view(request):
     try:
         active_event = Event.objects.get(is_active=True)
     except Event.DoesNotExist:
         messages.error(request, "No active event found. Please contact the administrator.")
-        return redirect('welcome')
+        return redirect('home')
     except Event.MultipleObjectsReturned:
         messages.error(request, "Multiple active events found. Please contact the administrator.")
-        return redirect('welcome')
+        return redirect('home')
 
     if request.method == 'POST':
         form = PhotoUploadForm(request.POST, request.FILES)

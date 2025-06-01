@@ -1,0 +1,77 @@
+{% extends 'events_photos/base.html' %}
+{% load static %}
+{% load socialaccount %} {# For Google login #}
+
+{% block title %}Welcome to KLD Event Photo App{% endblock %}
+
+{% block content %}
+    <div style="text-align: center; max-width: 800px; margin: 50px auto; padding: 30px; border-radius: 10px; background-color: #f8f9fa; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h1 style="color: #007bff; margin-bottom: 20px;">Welcome to the KLD Event Photo App!</h1>
+        <p style="font-size: 1.1em; color: #555; line-height: 1.6;">
+            Capture and relive your KLD school memories. This app allows students, faculty, and staff to share photos from various school events.
+        </p>
+
+        {% if global_error_message %}
+            <div class="alert alert-danger" style="margin-top: 20px; padding: 10px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 5px;">
+                {{ global_error_message }}
+            </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="margin-top: 20px; padding: 10px; border-radius: 5px;
+                    {% if message.tags == 'success' %}background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
+                    {% elif message.tags == 'error' %}background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+                    {% elif message.tags == 'warning' %}background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;
+                    {% else %}background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db;{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if current_active_event %}
+            <div style="margin-top: 30px; padding: 20px; border: 1px solid #cce5ff; border-radius: 8px; background-color: #e7f3ff;">
+                <h3 style="color: #0056b3;">Current Active Event: {{ current_active_event.name }}</h3>
+                <p>{{ current_active_event.description }}</p>
+                <p>Starts: {{ current_active_event.start_time|date:"M d, Y H:i" }}</p>
+                <p>Ends: {{ current_active_event.end_time|date:"M d, Y H:i" }}</p>
+            </div>
+        {% elif recent_event %}
+            <div style="margin-top: 30px; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px; background-color: #fafafa;">
+                <h3 style="color: #333;">Recent Event: {{ recent_event.name }}</h3>
+                <p>{{ recent_event.description }}</p>
+                <p>Ended: {{ recent_event.end_time|date:"M d, Y H:i" }}</p>
+            </div>
+        {% else %}
+            <div style="margin-top: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f0f0f0;">
+                <p style="font-size: 1.1em; color: #666;">No active or recent events found at the moment.</p>
+            </div>
+        {% endif %}
+
+        <div style="margin-top: 40px;">
+            {% if is_authenticated_user %}
+                <h2 style="color: #28a745;">Welcome, {{ user.first_name|default:user.username }}!</h2>
+                <p style="font-size: 1.1em; color: #555;">Enter an event code to join an event and start sharing photos.</p>
+
+                <form method="post" style="margin-top: 20px;">
+                    {% csrf_token %}
+                    <input type="text" name="event_code_input" placeholder="Enter Event Code" required
+                           style="padding: 10px; border: 1px solid #ced4da; border-radius: 5px; width: 60%; max-width: 300px; font-size: 1em;">
+                    <button type="submit"
+                            style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                        Join Event
+                    </button>
+                    {% if event_code_form_error %}
+                        <p style="color: #dc3545; margin-top: 10px;">{{ event_code_form_error }}</p>
+                    {% endif %}
+                </form>
+            {% else %}
+                <p style="font-size: 1.1em; color: #555;">Please sign in with your KLD Google Account to participate.</p>
+                <a href="{% provider_login_url 'google' %}"
+                   style="display: inline-block; padding: 12px 25px; margin-top: 20px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 1.1em;">
+                    Sign in with KLD Google Account
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
