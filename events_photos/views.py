@@ -235,3 +235,14 @@ def delete_photo_view(request, photo_id):
     }
     return render(request, 'events_photos/confirm_delete_photo.html', context)
 
+@login_required
+def unjoin_event_view(request):
+    if request.user.is_authenticated:
+        if request.user.joined_event_code:
+            request.user.joined_event_code = None
+            request.user.save()
+            messages.success(request, "You have been unjoined from the event.")
+        else:
+            messages.info(request, "You are not joined to any event.")
+    return redirect('home')
+

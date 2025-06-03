@@ -7,4 +7,5 @@ urlpatterns = [
     path('gallery/', views.photo_gallery_view, name='photo_gallery'),
     path('edit/<int:photo_id>/edit', views.edit_photo_view, name='edit_photo'),
     path('delete/<int:photo_id>/delete/', views.delete_photo_view, name='delete_photo'),
+    path('unjoin-event/', views.unjoin_event_view, name='unjoin_event'),
 ]

@@ -7,7 +7,7 @@ class SchoolSignupForm(SignupForm):
     SCHOOL_EMAIL_DOMAIN = 'kld.edu.ph'
 
     def clean_email(self):
-        email = self.cleaned_data.get['email']
+        email = self.cleaned_data.get('email')
         domain = email.split('@')[-1]
         if domain != self.SCHOOL_EMAIL_DOMAIN:
             raise ValidationError(
